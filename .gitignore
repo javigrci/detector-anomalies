@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Secretos y entorno
+.env
+.env.*
+!.env.example
+
+# Agente: ajustes locales (pueden contener datos privados)
+.claude/settings.local.json
+
+# Artefactos de modelo y datos reales (nunca en Git)
+models/
+artifacts/
+data/real/
+*.joblib
+*.pkl
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
