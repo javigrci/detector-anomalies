@@ -1,6 +1,7 @@
 <!--
 Sync Impact Report
-- Version change: (plantilla sin ratificar) → 1.0.0
+- Version change: 1.0.0 → 1.0.1 (PATCH: Principio V sin contradicción; estructura de specs/ según ADR 0001)
+- Versión inicial: 1.0.0 (2026-11-12)
 - Principios añadidos: I–VII (todos nuevos)
 - Secciones añadidas: Restricciones Técnicas y de Alcance; Flujo de Desarrollo y Puertas de Calidad; Governance
 - Secciones eliminadas: ninguna
@@ -87,8 +88,8 @@ detector.
 Una tarea no está terminada sin evidencia ejecutada.
 
 - Las pruebas son obligatorias: cada funcionalidad MUST incluir casos correctos, de error, de
-  borde y de seguridad. Las pruebas MUST escribirse antes o junto con el código y fallar antes de
-  que la implementación las haga pasar.
+  borde y de seguridad. Las pruebas MUST escribirse antes de la implementación y MUST fallar
+  inicialmente (red-green); la implementación se limita a hacerlas pasar.
 - Ruff, mypy y pytest MUST pasar en CI. Si hay un bloqueo, MUST documentarse y la tarea MUST NOT
   declararse terminada.
 - Los resultados de pruebas MUST reportarse tal como son; nunca inventados ni dados por ejecutados
@@ -135,7 +136,8 @@ analista.
   httpx; Ruff y mypy; Docker y Compose; GitHub Actions; uv. Cambiarlo MUST pasar por el
   procedimiento de enmienda.
 - **Estructura:** código en `src/security_anomaly/` (`api`, `core`, `ingestion`, `features`, `ml`,
-  `scoring`, `storage`, `schemas`), más `dashboard/`, `tests/`, `specs/`, `docs/` y `scripts/`.
+  `scoring`, `storage`, `schemas`), más `dashboard/`, `tests/`, `docs/` y `scripts/`. Las
+  especificaciones viven en `specs/NNN-nombre/` (`spec.md`, `plan.md`, `tasks.md`).
 - **Contrato de datos v1:** los campos no definidos MUST rechazarse o conservarse en `metadata`
   bajo política explícita; MUST NOT entrar silenciosamente al vector de características.
 - **API:** prefijo `/api/v1`, errores con formato consistente (`code`, `message`, `request_id`,
@@ -172,4 +174,4 @@ Esta constitución prevalece sobre cualquier otra práctica del proyecto. En cas
   verificar el cumplimiento. Las violaciones justificadas se documentan en Complexity Tracking.
 - **Guía de ejecución:** `AGENTS.md` y `SPEC.md` complementan este documento sin contradecirlo.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-12
+**Version**: 1.0.1 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-13
