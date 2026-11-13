@@ -151,7 +151,7 @@ description: "Tareas del incremento 0 — Base del repositorio"
 
 - [X] T038 [US3] Crear `.github/workflows/ci.yml` con los tres jobs de research R11; acciones fijadas por versión real consultada; volcado de logs de Compose si falla y `down -v` al final (FR-000-13, FR-000-18) (T037)
 - [X] T039 [US3] Verificar en local quickstart escenario 1 y los fallos provocados: un error de Ruff, uno de mypy y un test fallido rompen cada paso (código de salida distinto de 0); `uv lock --check` falla con un lock desactualizado; revertir todo lo provocado (SC-003, SC-007)
-- [ ] T040 [US3] **Requiere autorización del usuario (commit y push):** hacer commit del trabajo realizado hasta esta tarea (sin `.env` ni secretos) y subirlo a GitHub; observar la ejecución real de los tres jobs; comprobar con `gh api` si el repositorio permite protección de rama; documentar el resultado y, si no está disponible, la limitación en `README.md` (riesgo 2 del plan)
+- [X] T040 [US3] **Requiere autorización del usuario (commit y push):** hacer commit del trabajo realizado hasta esta tarea (sin `.env` ni secretos) y subirlo a GitHub; observar la ejecución real de los tres jobs; comprobar con `gh api` si el repositorio permite protección de rama; documentar el resultado y, si no está disponible, la limitación en `README.md` (riesgo 2 del plan)
 
 **Checkpoint**: puerta de calidad automática operativa.
 
@@ -170,7 +170,7 @@ description: "Tareas del incremento 0 — Base del repositorio"
 ### Implementación
 
 - [X] T042 [US5] Escribir `README.md`: requisitos (uv, Docker con integración WSL), instalación, configuración (`.env`), arranque, verificación local (Ruff, mypy, pytest, PostgreSQL temporal para integración), sondas, migraciones, detención, CI y límites conocidos (FR-000-16) (T041)
-- [ ] T043 [US5] Clonar el repositorio en un directorio nuevo del scratchpad y seguir el README al pie de la letra; anotar tiempos y cualquier paso que falte, y corregir el README (SC-001)
+- [X] T043 [US5] Clonar el repositorio en un directorio nuevo del scratchpad y seguir el README al pie de la letra; anotar tiempos y cualquier paso que falte, y corregir el README (SC-001)
 
 **Checkpoint**: todas las historias completas y verificadas.
 
@@ -180,10 +180,10 @@ description: "Tareas del incremento 0 — Base del repositorio"
 
 **Purpose**: evidencia, revisión y cierre del incremento.
 
-- [ ] T044 Crear `specs/000-base/verification.md`: resultados reales de los 8 escenarios de `quickstart.md`, tabla FR-000-01…19 y SC-001…007 con evidencia, y desviaciones respecto al plan
-- [ ] T045 [P] Búsqueda de secretos en el árbol de trabajo y en el historial (`git log -p`, patrones de claves y contraseñas) y comprobar que `.env` no está versionado (SC-006)
-- [ ] T046 [P] Ejecutar la verificación completa final: Ruff, formato, mypy, pytest con y sin `integration`, `docker compose up --build -d --wait`, `down -v`; informar de los resultados tal como salgan (NFR-02)
-- [ ] T047 Revisar los criterios de aceptación uno a uno y el Constitution Check del plan; comprobar que `pyproject.toml` y el OpenAPI generado no contienen dependencias ni rutas fuera de la spec y SPEC §2 (FR-000-17); proponer el mensaje de commit de cierre y **pedir autorización** antes de hacer commit y push (Principio VII; Definition of Done)
+- [X] T044 Crear `specs/000-base/verification.md`: resultados reales de los 8 escenarios de `quickstart.md`, tabla FR-000-01…19 y SC-001…007 con evidencia, y desviaciones respecto al plan
+- [X] T045 [P] Búsqueda de secretos en el árbol de trabajo y en el historial (`git log -p`, patrones de claves y contraseñas) y comprobar que `.env` no está versionado (SC-006)
+- [X] T046 [P] Ejecutar la verificación completa final: Ruff, formato, mypy, pytest con y sin `integration`, `docker compose up --build -d --wait`, `down -v`; informar de los resultados tal como salgan (NFR-02)
+- [X] T047 Revisar los criterios de aceptación uno a uno y el Constitution Check del plan; comprobar que `pyproject.toml` y el OpenAPI generado no contienen dependencias ni rutas fuera de la spec y SPEC §2 (FR-000-17); proponer el mensaje de commit de cierre y **pedir autorización** antes de hacer commit y push (Principio VII; Definition of Done)
 
 ---
 
