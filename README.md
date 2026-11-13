@@ -116,8 +116,9 @@ pull request, con tres jobs:
 
 ## Límites conocidos
 
-- Que un fallo de la CI **bloquee** la integración exige activar la protección de rama en GitHub;
-  en repositorios privados de planes gratuitos puede no estar disponible. Sin ella, la CI informa
-  pero no impide fusionar.
+- La CI informa del resultado pero **no puede bloquear** la integración: comprobado el 2026-11-13,
+  GitHub responde 403 («Upgrade to GitHub Pro or make this repository public») al consultar la
+  protección de rama de este repositorio privado. Hasta que eso cambie, la regla se cumple por
+  proceso: no integrar cambios con la CI en rojo.
 - Los tiempos de referencia (`/ready` en unos 3,6 s con la base de datos caída, recuperación en
   1 s) se midieron en una máquina de desarrollo con WSL2 y Docker Desktop; no son garantías.
