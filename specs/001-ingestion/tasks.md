@@ -221,8 +221,8 @@ description: "Tareas del incremento 1 — Ingesta y normalización de logs"
 - [X] T065 Ejecutar los 9 escenarios de `quickstart.md`, medir el rendimiento y registrar los resultados reales en `specs/001-ingestion/verification.md`, con la tabla FR-001-01…30 y SC-001…008 y las desviaciones
 - [X] T066 [P] Búsqueda de fugas y secretos: ningún nombre de usuario, centinela, clave ni comando de `sudo` en salidas, logs, informes ni `git grep` del árbol y del historial; los fixtures solo contienen datos ficticios (IPs de rangos de documentación); `.env` no versionado (SC-006)
 - [X] T067 [P] Verificación completa final: Ruff, formato, mypy (`src` y `tests`), pytest con y sin `integration`, `docker compose up --build -d --wait` con `/health` y `/ready` en 200 y `down -v`; comprobar que `pyproject.toml` no tiene dependencias nuevas y que el OpenAPI solo documenta `/health` y `/ready` (FR-001-30)
-- [ ] T068 **Requiere autorización del usuario (commit y push):** hacer commit del trabajo hasta esta tarea (sin `.env` ni secretos), subirlo a `main` y observar la ejecución real de los tres jobs de CI en GitHub; registrar el resultado
-- [ ] T069 Revisar los criterios de aceptación uno a uno y el Constitution Check del plan; proponer el mensaje de commit de cierre y **pedir autorización** antes de hacer commit y push de `verification.md` y `tasks.md` (Principio VII; Definition of Done)
+- [X] T068 **Requiere autorización del usuario (commit y push):** hacer commit del trabajo hasta esta tarea (sin `.env` ni secretos), subirlo a `main` y observar la ejecución real de los tres jobs de CI en GitHub; registrar el resultado
+- [X] T069 Revisar los criterios de aceptación uno a uno y el Constitution Check del plan; proponer el mensaje de commit de cierre y **pedir autorización** antes de hacer commit y push de `verification.md` y `tasks.md` (Principio VII; Definition of Done)
 
 ---
 

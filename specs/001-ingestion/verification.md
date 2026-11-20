@@ -1,11 +1,10 @@
 # Verificación del incremento 1
 
-**Fecha:** 2026-11-20 · **Estado del código:** árbol de trabajo previo al commit de T068 ·
+**Fecha:** 2026-11-20 · **Commit verificado:** `7b0d983` ·
 **Entorno:** WSL2 (Ubuntu), Docker Desktop 29.3.0, Compose 5.1.0, uv 0.11.29, Python 3.12.3.
 
 Todos los resultados son los observados en la ejecución; los tiempos son de una máquina de
-desarrollo y no son garantías. La CI de GitHub **todavía no se ha ejecutado** para este incremento
-(se registra tras T068).
+desarrollo y no son garantías. La CI de GitHub se ejecutó sobre el commit `7b0d983` (run 44780849063) y pasó los tres jobs.
 
 ## Resultado global
 
@@ -20,6 +19,7 @@ desarrollo y no son garantías. La CI de GitHub **todavía no se ha ejecutado** 
 | `uv lock --check` | salida 0: `uv.lock` vigente |
 | Dependencias | sin cambios: el único cambio de `pyproject.toml` es una excepción de Ruff para los tests (`S311`) |
 | OpenAPI | solo documenta `/health` y `/ready` (sin rutas nuevas) |
+| CI en GitHub (run 44780849063) | `quality`, `integration` y `compose-smoke`: **success** |
 | `docker compose up --build -d --wait` | API y base de datos *Healthy* en 25 s; `/health` 200, `/ready` 200; la imagen importa `security_anomaly.ingestion` (19 exportaciones); proceso con UID 10001 |
 
 ## Escenarios de `quickstart.md`
