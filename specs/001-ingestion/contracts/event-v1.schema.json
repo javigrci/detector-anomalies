@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event-v1.schema.json",
+  "title": "Evento de entrada v1 (SPEC §4.1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "timestamp", "source", "event_type", "action", "outcome"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Único por fuente. Sin caracteres de control."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 con zona horaria obligatoria. Rango válido 2000-01-01 a 2100-01-01 (configurable). Se normaliza a UTC."
+    },
+    "source": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "Tras pasar a minúsculas debe cumplir ^[a-z0-9][a-z0-9-]{0,63}$."
+    },
+    "event_type": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Catálogo v1: authentication, privilege_escalation. Otro valor se agrupa como other."
+    },
+    "action": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Catálogo v1: login, invalid_user, sudo. Otro valor se agrupa como other."
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["success", "failure", "unknown"],
+      "description": "Se admiten variaciones de mayúsculas y espacios; otro valor se rechaza."
+    },
+    "username": {
+      "type": ["string", "null"],
+      "maxLength": 256,
+      "description": "Se seudonimiza con HMAC; nunca sale en claro."
+    },
+    "source_ip": {
+      "type": ["string", "null"],
+      "description": "IPv4 o IPv6 válida, sin identificador de ámbito (%). Se normaliza a forma comprimida."
+    },
+    "host": {
+      "type": ["string", "null"],
+      "maxLength": 256,
+      "description": "Se normaliza a minúsculas."
+    }
+  }
+}
