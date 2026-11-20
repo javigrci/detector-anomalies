@@ -1,0 +1,35 @@
+[
+  {
+    "event_id": "cat-001",
+    "timestamp": "2026-11-12T10:30:00Z",
+    "source": "linux-auth",
+    "event_type": "kerberos-ticket",
+    "action": "ssh-key-added",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "cat-002",
+    "timestamp": "2026-11-12T10:30:01Z",
+    "source": "linux-auth",
+    "event_type": "Process_Start",
+    "action": "LOGIN",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "cat-003",
+    "timestamp": "2026-11-12T10:30:02Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  }
+]

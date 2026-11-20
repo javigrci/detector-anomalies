@@ -29,10 +29,21 @@ Convierte un `auth.log` clásico. `start_year` es el año de la primera línea; 
 líneas se rechazan con `missing_time_context`. El comando de `sudo` nunca se conserva.
 
 ```python
-generate_synthetic(config: SyntheticConfig, *, policy: IngestionPolicy = IngestionPolicy()) -> SyntheticDataset
+generate_synthetic(config: SyntheticConfig, *, policy: IngestionPolicy | None = None) -> SyntheticDataset
 ```
-Determinista para una misma `config`. Lanza `ValueError` si `n_events` supera
-`policy.max_events_per_dataset` o la configuración es incoherente.
+Determinista para una misma `config`. Con `policy=None` se usa la política por defecto. Lanza
+`ValueError` si `n_events` supera `policy.max_events_per_dataset` o la configuración es incoherente.
+`n_events` es el total de eventos devueltos; las etiquetas van aparte, una por evento único.
+
+## Exportaciones
+
+`security_anomaly.ingestion` exporta exactamente:
+
+- Funciones: `ingest_file`, `ingest_records`, `ingest_linux_auth`, `generate_synthetic`.
+- Configuración: `IngestionPolicy`, `Pseudonymizer`, `SyntheticConfig`.
+- Resultados: `IngestionResult`, `IngestionReport`, `NormalizedEvent`, `Rejection`, `SyntheticDataset`, `SyntheticLabel`.
+- Códigos: `RejectionCode`, `BatchRejectionCode`.
+- Excepciones: `IngestionError`, `BatchRejected`, `PseudonymKeyMissing`, `ConfigError`.
 
 ## Garantías
 

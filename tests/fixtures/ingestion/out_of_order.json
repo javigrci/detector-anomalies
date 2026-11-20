@@ -1,0 +1,90 @@
+[
+  {
+    "event_id": "ooo-001",
+    "timestamp": "2026-11-12T10:30:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-002",
+    "timestamp": "2026-11-12T10:31:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-003",
+    "timestamp": "2026-11-12T10:30:30Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-004",
+    "timestamp": "2026-11-12T10:31:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-003",
+    "timestamp": "2026-11-12T10:30:30Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-006",
+    "timestamp": "2026-11-12T10:40:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "not-an-ip",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-007",
+    "timestamp": "2026-11-12T10:32:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "ooo-008",
+    "timestamp": "2026-11-12T10:31:30Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  }
+]

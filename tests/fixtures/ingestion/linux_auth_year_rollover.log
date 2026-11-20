@@ -1,0 +1,4 @@
+Dec 31 23:59:58 srv-demo-01 sshd[1]: Failed password for user001 from 192.0.2.45 port 1 ssh2
+Dec 31 23:59:59 srv-demo-01 CRON[2]: (root) CMD (run-parts /etc/cron.hourly)
+Jan  1 00:00:01 srv-demo-01 sshd[3]: Accepted password for user001 from 192.0.2.45 port 2 ssh2
+Jan  1 00:00:02 srv-demo-01 sshd[4]: Failed password for user002 from 192.0.2.46 port 3 ssh2

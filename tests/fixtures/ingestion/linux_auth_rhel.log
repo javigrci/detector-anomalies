@@ -1,0 +1,6 @@
+Nov 12 10:30:00 rhel-demo-01 sshd[999]: Failed password for invalid user test from 203.0.113.5 port 5555 ssh2
+Nov 12 10:30:02 rhel-demo-01 sshd[999]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=203.0.113.5
+Nov 12 10:30:10 rhel-demo-01 sshd[1000]: Accepted publickey for user004 from 203.0.113.6 port 5556 ssh2
+Nov 12 10:30:30 rhel-demo-01 sudo:   user004 : TTY=pts/0 ; PWD=/home/user004 ; USER=root ; COMMAND=/bin/yum update
+Nov 12 10:31:00 rhel-demo-01 sshd[1001]: Failed password for root from 203.0.113.7 port 5557 ssh2
+Nov  5 09:05:09 rhel-demo-01 sshd[1002]: Invalid user  from 203.0.113.8 port 5558

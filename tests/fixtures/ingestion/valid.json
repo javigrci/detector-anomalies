@@ -1,0 +1,57 @@
+[
+  {
+    "event_id": "evt-000001",
+    "timestamp": "2026-11-12T10:30:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "192.0.2.45",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "evt-000002",
+    "timestamp": "2026-11-12T10:30:05Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "192.0.2.45",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "evt-000003",
+    "timestamp": "2026-11-12T12:31:00+02:00",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "success",
+    "username": "user002",
+    "source_ip": "198.51.100.7",
+    "host": "SRV-DEMO-02"
+  },
+  {
+    "event_id": "evt-000004",
+    "timestamp": "2026-11-12T10:32:00Z",
+    "source": "linux-auth",
+    "event_type": "privilege_escalation",
+    "action": "sudo",
+    "outcome": "success",
+    "username": "user002",
+    "source_ip": null,
+    "host": "srv-demo-02"
+  },
+  {
+    "event_id": "evt-000005",
+    "timestamp": "2026-11-12T10:33:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "success",
+    "username": "user003",
+    "source_ip": "2001:db8::1",
+    "host": "srv-demo-01"
+  }
+]

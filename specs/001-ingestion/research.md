@@ -147,7 +147,7 @@ Rechazos de lote (excepción `BatchRejected`): `file_too_large`, `too_many_event
 - **Racional:** O(n) en tiempo y memoria; determinista.
 
 ## R10. Generador sintético
-- **Decisión:** `generate_synthetic(config, *, policy=IngestionPolicy()) -> SyntheticDataset` con
+- **Decisión:** `generate_synthetic(config, *, policy=None) -> SyntheticDataset` (``None`` = política por defecto) con
   `random.Random(seed)`, usando
   solo `random()` y aritmética propia para elegir (sin `choice`/`shuffle`, cuyas implementaciones
   pueden cambiar entre versiones de Python). Produce eventos en forma de diccionarios del esquema v1

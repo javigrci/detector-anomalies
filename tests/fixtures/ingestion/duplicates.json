@@ -1,0 +1,46 @@
+[
+  {
+    "event_id": "evt-000001",
+    "timestamp": "2026-11-12T10:30:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "192.0.2.45",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "evt-000002",
+    "timestamp": "2026-11-12T10:30:05Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "192.0.2.45",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "evt-000001",
+    "timestamp": "2026-11-12T10:30:00Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "failure",
+    "username": "user001",
+    "source_ip": "192.0.2.45",
+    "host": "srv-demo-01"
+  },
+  {
+    "event_id": "evt-000002",
+    "timestamp": "2026-11-12T10:30:05Z",
+    "source": "linux-auth",
+    "event_type": "authentication",
+    "action": "login",
+    "outcome": "success",
+    "username": "user001",
+    "source_ip": "192.0.2.45",
+    "host": "srv-demo-01"
+  }
+]

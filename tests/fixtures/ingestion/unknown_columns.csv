@@ -1,0 +1,2 @@
+event_id,timestamp,source,event_type,action,outcome,username,source_ip,host,note,SENTINEL-HEADER ; rm -rf /
+h-001,2026-11-12T10:30:00Z,linux-auth,authentication,login,failure,user001,192.0.2.45,srv-demo-01,n,v

@@ -51,19 +51,32 @@ def _describe(error_type: str) -> str:
     return "obligatoria" if error_type == "missing" else f"valor inválido ({error_type})"
 
 
-def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
-    """Carga y valida los ajustes. Los valores vacíos se tratan como ausentes."""
+def load_model[M: BaseModel](
+    model_cls: type[M],
+    env_names: Mapping[str, str],
+    environ: Mapping[str, str] | None = None,
+) -> M:
+    """Carga y valida un modelo desde variables de entorno.
+
+    ``env_names`` asocia cada campo del modelo con el nombre de su variable. Los valores vacíos se
+    tratan como ausentes. Los errores nombran la variable y el tipo de error, nunca el valor.
+    """
     source = os.environ if environ is None else environ
     raw: dict[str, str] = {}
-    for field, name in ENV_VARS.items():
+    for field, name in env_names.items():
         value = source.get(name)
         if value is not None and value.strip():
             raw[field] = value.strip()
     try:
-        return Settings.model_validate(raw)
+        return model_cls.model_validate(raw)
     except ValidationError as exc:
         problems = []
         for error in exc.errors(include_input=False, include_url=False):
-            field = str(error["loc"][0]) if error["loc"] else "?"
-            problems.append(f"{ENV_VARS.get(field, field)}: {_describe(error['type'])}")
+            field = str(error["loc"][0]) if error["loc"] else "configuración"
+            problems.append(f"{env_names.get(field, field)}: {_describe(error['type'])}")
         raise ConfigError("Configuración inválida: " + "; ".join(problems)) from None
+
+
+def load_settings(environ: Mapping[str, str] | None = None) -> Settings:
+    """Carga y valida los ajustes del servicio (FR-000-03)."""
+    return load_model(Settings, ENV_VARS, environ)

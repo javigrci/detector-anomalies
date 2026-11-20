@@ -13,6 +13,13 @@ EXPECTED_VARS = {
     "POSTGRES_USER",
     "POSTGRES_PASSWORD",
     "POSTGRES_DB",
+    "PSEUDONYM_KEY",
+    "INGEST_MAX_FILE_BYTES",
+    "INGEST_MAX_EVENTS_PER_BATCH",
+    "INGEST_MAX_EVENTS_PER_DATASET",
+    "INGEST_MAX_FIELD_LENGTH",
+    "INGEST_TIMESTAMP_MIN",
+    "INGEST_TIMESTAMP_MAX",
 }
 
 
@@ -33,6 +40,7 @@ def test_env_example_contains_only_placeholder_secrets() -> None:
     values = _env_example()
     assert "change-me" in values["POSTGRES_PASSWORD"]
     assert "change-me" in values["DATABASE_URL"]
+    assert "change-me" in values["PSEUDONYM_KEY"]
 
 
 def test_dotenv_is_gitignored() -> None:

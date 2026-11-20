@@ -1,0 +1,7 @@
+event_id,timestamp,source,event_type,action,outcome,username,source_ip,host
+row-001,2026-11-12T10:30:00Z,linux-auth,authentication,login,failure,user001,192.0.2.45,srv-demo-01
+row-002,2026-11-12T10:30:01Z,linux-auth,authentication,login,failure,user001,192.0.2.45,srv-demo-01,SENTINEL-EXTRA-CELL
+row-003,2026-11-12T10:30:02Z,linux-auth,authentication,login,failure,user001
+row-004,2026-11-12T10:30:03Z,linux-auth,authentication,login,failure,user001,192.0.2.45,"srv-demo
+SENTINEL-NEWLINE"
+row-005,2026-11-12T10:30:04Z,linux-auth,authentication,login,failure,user001,192.0.2.45,srv-demo-01

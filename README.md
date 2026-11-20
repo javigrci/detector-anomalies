@@ -3,16 +3,18 @@
 Prototipo de apoyo al análisis de seguridad (SOC): ingerirá logs de auditoría, los puntuará con
 Isolation Forest y expondrá los resultados por API REST.
 
-> **Estado: incremento 0 (base del repositorio).** Solo existen el esqueleto del servicio, las
-> sondas `/health` y `/ready`, la configuración, el logging estructurado, el entorno con Docker
-> Compose y la CI. Todavía no hay ingesta, modelo ni autenticación.
+> **Estado: incrementos 0 y 1.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
+> configuración, logging estructurado, Docker Compose y CI) y la **biblioteca de ingesta y
+> normalización de logs**. Todavía no hay persistencia, modelo, API de negocio ni autenticación.
 >
 > Una anomalía no implica un ataque, y el `anomaly_score` futuro no es una probabilidad de
-> intrusión.
+> intrusión. Los datos sintéticos validan el software, no la capacidad real de detección.
 
 Documentación del proyecto: [constitución](.specify/memory/constitution.md) ·
 [SPEC.md](SPEC.md) · [roadmap](docs/roadmap.md) · [decisiones](docs/decisions/) ·
-[especificación del incremento 0](specs/000-base/spec.md)
+[contrato de datos](docs/data-contract.md) ·
+[especificación del incremento 0](specs/000-base/spec.md) ·
+[especificación del incremento 1](specs/001-ingestion/spec.md)
 
 ## Requisitos
 
@@ -95,6 +97,32 @@ export DATABASE_URL="postgresql+psycopg://postgres:${PGPW}@127.0.0.1:55432/postg
 uv run pytest -m integration
 docker stop pg-test
 ```
+
+## Ingesta de logs (biblioteca)
+
+`security_anomaly.ingestion` lee JSON (lista o JSON Lines) y CSV, convierte `auth.log` clásico de
+Linux, valida y normaliza los eventos, seudonimiza el usuario y devuelve un informe con aceptados,
+rechazados, duplicados, fuera de orden e ignorados. No tiene interfaz: los incrementos siguientes la
+consumen como funciones. Contrato de datos completo en [docs/data-contract.md](docs/data-contract.md).
+
+```python
+from pathlib import Path
+
+from security_anomaly.ingestion import IngestionPolicy, Pseudonymizer, ingest_file
+
+result = ingest_file(
+    Path("events.json"),
+    policy=IngestionPolicy.from_environ(),
+    pseudonymizer=Pseudonymizer.from_environ(),
+)
+print(result.report.accepted, result.report.rejected)
+```
+
+Necesita `PSEUDONYM_KEY` (mínimo 32 caracteres aleatorios; `openssl rand -hex 32`). Los límites y el
+rango de fechas se configuran con las variables `INGEST_*` de `.env.example`. El informe contiene
+solo códigos, campos, posiciones y recuentos, nunca valores de entrada. Para `auth.log` se usa
+`ingest_linux_auth(path, policy=…, pseudonymizer=…, start_year=2026, tz=ZoneInfo("Europe/Madrid"))`;
+`generate_synthetic` produce eventos sintéticos reproducibles con etiquetas aparte.
 
 ## Migraciones
 

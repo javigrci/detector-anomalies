@@ -1,0 +1,6 @@
+event_id,timestamp,source,event_type,action,outcome,username,source_ip,host
+evt-000001,2026-11-12T10:30:00Z,linux-auth,authentication,login,failure,user001,192.0.2.45,srv-demo-01
+evt-000002,2026-11-12T10:30:05Z,linux-auth,authentication,login,failure,user001,192.0.2.45,srv-demo-01
+evt-000003,2026-11-12T12:31:00+02:00,linux-auth,authentication,login,success,user002,198.51.100.7,SRV-DEMO-02
+evt-000004,2026-11-12T10:32:00Z,linux-auth,privilege_escalation,sudo,success,user002,,srv-demo-02
+evt-000005,2026-11-12T10:33:00Z,linux-auth,authentication,login,success,user003,2001:db8::1,srv-demo-01
