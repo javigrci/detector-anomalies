@@ -5,6 +5,9 @@ Eres un agente de desarrollo en un proyecto Python de detección de anomalías e
 **Jerarquía de autoridad:** `.specify/memory/constitution.md` > `SPEC.md` > `specs/NNN-*/` aprobadas.
 Las decisiones registradas en `docs/decisions/` complementan a las anteriores.
 
+**Al empezar una sesión nueva, lee `docs/handoff.md`**: resume el estado, las decisiones, lo que falta
+aprobar y cómo preparar el equipo. Si discrepa del repositorio, mandan `git log` y los `tasks.md`.
+
 Las reglas de fondo (honestidad en la detección, integridad del ML, seguridad, pruebas,
 reproducibilidad, humano en el circuito) están en la constitución; no se repiten aquí.
 Reglas operativas:
