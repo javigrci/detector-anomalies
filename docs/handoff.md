@@ -32,7 +32,7 @@ cumple por proceso (no integrar con la CI en rojo).
 |---|---|---|
 | 0 `000-base` | Esqueleto: FastAPI, `/health` y `/ready`, configuración, logging JSON con `request_id`, Docker Compose, CI | ✅ Hecho y en `main` (CI verde, run 43423457154) |
 | 1 `001-ingestion` | Biblioteca de ingesta: JSON/CSV, `auth.log` de Linux, normalización, rechazos sin valores, HMAC, datos sintéticos | ✅ Hecho y en `main` (CI verde, run 44780849063) |
-| 2 `002-persistence` | PostgreSQL, migración, guardado idempotente, consultas, retención/purga, tres roles de BD | 🟡 **Implementado y verificado en local (69 tareas `[X]`, `verification.md`); falta commit, push y CI en verde** |
+| 2 `002-persistence` | PostgreSQL, migración, guardado idempotente, consultas, retención/purga, tres roles de BD | ✅ Hecho y en `main` (CI verde, run 44964800395, commit `94a986f`) |
 | 3 `003-feature-engineering` | Características por evento y por ventana de 5 min, sin fuga de futuro | ⬜ |
 | 4 `004-model-training` | Entrenamiento, calibración, versiones del modelo | ⬜ |
 | 5 `005-inference-api` | API de puntuación y consulta, API key con roles `reader`/`admin` | ⬜ |
@@ -41,7 +41,7 @@ cumple por proceso (no integrar con la CI en rojo).
 
 Resultado verificado en local al implementar el incremento 2: **490 tests unitarios + 109 de integración**
 (con PostgreSQL real), Ruff, formato y mypy estricto en verde, sin dependencias nuevas desde el
-incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 2 de 7; el 2 pendiente de CI). Los plazos no se han
+incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 3 de 7: 0, 1 y 2). Los plazos no se han
 medido: solo el orden y las puertas de aceptación son fiables.
 
 ## 3. Dónde está cada cosa
@@ -88,16 +88,10 @@ purga); paginación por tamaño y desplazamiento (SPEC §6.2); sin tabla de lote
 
 ## 5. Qué falta ahora mismo (empieza aquí)
 
-El incremento 2 está **implementado y verificado en local** (ver `specs/002-persistence/verification.md`).
-El usuario aprobó el 2026-11-22 la CLI mínima, los perfiles `setup`/`maintenance` de Compose y las variables
-de entorno nuevas. Queda:
-
-1. **Commit y push** (T068 y T069; requieren autorización explícita) y comprobar que los cuatro jobs de la CI
-   quedan en verde. El job `integration` (aprovisionamiento con la CLI real) y el `compose-smoke` modificado
-   **no se han ejecutado todavía en GitHub**. Anotar el identificador del run en `verification.md`.
-2. Si la CI falla, corregir antes de dar el incremento por cerrado (el criterio de aceptación manda).
-3. Después, el **incremento 3** (`003-feature-engineering`): `/speckit-specify` → … Consumirá
-   `read_range` (lectura `[desde, hasta)` sin fuga de futuro).
+El incremento 2 está **cerrado**: CI verde (run 44964800395) y `verification.md` completo. Siguiente: el
+**incremento 3** (`003-feature-engineering`): `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` →
+`/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`. Consumirá `read_range` (lectura `[desde, hasta)`
+sin fuga de futuro) y debe calcular características por evento y por ventana de 5 min sin fuga del futuro.
 
 Para trabajar en local: la API en Compose usa el rol `anomaly_app`; `/ready` da 503 hasta ejecutar
 `docker compose --profile setup run --rm db-setup`. Hay que rellenar en `.env` las tres contraseñas de rol

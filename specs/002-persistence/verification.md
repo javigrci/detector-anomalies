@@ -1,7 +1,8 @@
 # Verificación del incremento 2 — Persistencia de eventos
 
-**Fecha:** 2026-11-22 · **Estado:** implementación completa y verificada en local; **CI de GitHub pendiente**
-(se ejecutará al hacer push, T069). Todos los resultados de este documento son salidas reales.
+**Fecha:** 2026-11-22 · **Estado:** cerrado. Implementación verificada en local y **CI de GitHub en verde**
+(run #8, id 44964800395, commit `94a986f`; los tres jobs en verde según el usuario, que lo comprobó en la
+interfaz de GitHub porque el repositorio es privado y no pude consultarlo). Todos los resultados de este documento son salidas reales.
 
 ## 1. Puertas de calidad (T065)
 
@@ -97,15 +98,14 @@ la migración hace fallar `test_privileges.py` (restaurado después).
 4. **Reguardar un lote ya existente** de 10.000 eventos tarda 4,0 s (más que el guardado inicial, 2,3 s) por la
    consulta que compara el contenido de los existentes. Está por debajo del umbral de 10 s; es un punto de
    mejora si fuese un caso frecuente.
-5. **CI de GitHub no ejecutada:** el job `integration` (aprovisionamiento con la CLI real) y el `compose-smoke`
-   modificado solo se han verificado por inspección de texto (`test_ci_workflow.py`) y reproduciendo sus pasos en
-   local. El resultado real llegará tras el push.
+5. **CI de GitHub:** el job `integration` (aprovisionamiento con la CLI real) y el `compose-smoke` modificado
+   se verificaron antes del push por inspección de texto y reproduciendo sus pasos en local; después, en
+   GitHub: run #8 (44964800395) con los tres jobs en verde.
 6. El reloj de la base de datos del contenedor de Compose coincidía con el del host (la purga de la simulación
    calculó `cutoff` = ahora − 90 días).
 
 ## 8. Riesgos y decisiones pendientes
 
-- Revisar la CI en cuanto se haga push; si falla el `compose-smoke`, corregirlo antes de dar el incremento por cerrado.
 - `psycopg.sql` escribe la contraseña de rol como literal en el DDL: el servidor podría registrarla si
   `log_statement` está en `ddl` o `all`. Documentar en el runbook del incremento 7 que no debe activarse en
   producción.
@@ -115,4 +115,4 @@ la migración hace fallar `test_privileges.py` (restaurado después).
 
 ## 9. Commits
 
-Pendientes de autorización explícita (T068 y T069).
+`94a986f` (T068), subido a `main` con autorización explícita del usuario (T069).

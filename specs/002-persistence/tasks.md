@@ -233,8 +233,8 @@ description: "Tareas del incremento 2 — Persistencia de eventos"
 - [X] T065 Ejecutar la calidad completa: `uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run mypy tests`, `uv run pytest -q -m "not integration"` y `uv run pytest -q -m integration` contra PostgreSQL temporal; registrar los resultados reales sin editarlos; si algo falla, el incremento no está cerrado (AGENTS.md regla 6 y 8)
 - [X] T066 Ejecutar el `quickstart.md` completo (escenarios 1 a 10) y escribir `specs/002-persistence/verification.md` con resultados reales, tiempos medidos (SC-001, SC-004) junto con hardware, volumen y condiciones, matriz FR/SC → test, riesgos y decisiones pendientes; marcar `[X]` solo lo comprobado (T065)
 - [X] T067 Confirmar que no hay dependencias nuevas (`git diff` de `pyproject.toml` y `uv.lock` vacío), ni endpoints, ni tablas de predicciones o modelos, ni secretos en el diff (FR-002-29; AGENTS.md regla 3) (T065)
-- [ ] T068 **Requiere autorización explícita:** commit en `main` con el mensaje de cierre en español y la línea `Co-Authored-By` fijada por el entorno (T066, T067)
-- [ ] T069 **Requiere autorización explícita:** `git push` y comprobar que los cuatro jobs de la CI quedan en verde, anotando el identificador del run en `verification.md` (T068)
+- [X] T068 **Requiere autorización explícita:** commit en `main` con el mensaje de cierre en español y la línea `Co-Authored-By` fijada por el entorno (T066, T067)
+- [X] T069 **Requiere autorización explícita:** `git push` y comprobar que los cuatro jobs de la CI quedan en verde, anotando el identificador del run en `verification.md` (T068)
 
 ---
 
