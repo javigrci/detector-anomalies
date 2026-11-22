@@ -38,7 +38,7 @@ transacción.
 aplicación no puede borrar ni alterar el esquema; la base de datos no se publica en el equipo; las
 migraciones y la purga son explícitas, nunca automáticas.
 
-**Scale/Scope**: ≈10 módulos fuente nuevos, ≈16 archivos de test, 1 migración, 1 ADR, hasta
+**Scale/Scope**: ≈10 módulos fuente nuevos, ≈35 archivos de test (según `tasks.md`), 1 migración, 1 ADR, hasta
 100.000 eventos en las pruebas de rendimiento.
 
 ## Constitution Check
@@ -47,7 +47,7 @@ migraciones y la purga son explícitas, nunca automáticas.
 
 | Principio | Evaluación | Estado |
 |---|---|---|
-| I. Spec como fuente de verdad | Trazable a FR-002-01…29; sin dependencias nuevas. Hay **tres componentes no pedidos expresamente** (CLI mínima, perfiles de Compose y variables de entorno nuevas) que se justifican en research R10 y se someten a tu aprobación | ✅ (con aprobación) |
+| I. Spec como fuente de verdad | Trazable a FR-002-01…29; sin dependencias nuevas. Hay **tres componentes no pedidos expresamente** (CLI mínima, perfiles de Compose y variables de entorno nuevas) que se justifican en research R10 y **fueron aprobados por el usuario el 2026-11-22** | ✅ |
 | II. Honestidad en la detección | No hay puntuación; la documentación mantiene la advertencia sobre datos sintéticos | ✅ (N/A) |
 | III. Integridad del ML | La lectura por rango es semiabierta y nunca devuelve eventos con `timestamp >= end`; el orden es determinista; no se persisten marcas relativas al lote | ✅ |
 | IV. Seguridad y privacidad | Tres roles con mínimos privilegios; `CHECK` que obliga al formato `usr_…`; filtro por seudónimo (nunca por nombre real); consultas con parámetros; `StorageError` sin credenciales ni valores; logs solo con recuentos | ✅ |

@@ -55,8 +55,19 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.3
       - name: Instalar dependencias (lock congelado)
         run: uv sync --frozen
-      - name: Migraciones (sin revisiones de negocio)
-        run: uv run alembic upgrade head
+      - name: Contraseñas de rol aleatorias y distintas (solo viven en este job)
+        run: |
+          for name in MIGRATOR_DB_PASSWORD APP_DB_PASSWORD MAINT_DB_PASSWORD; do
+            value="$(openssl rand -hex 12)"
+            echo "::add-mask::${value}"
+            echo "${name}=${value}" >> "$GITHUB_ENV"
+          done
+      - name: Aprovisionar roles y aplicar migraciones (CLI real)
+        run: |
+          export ADMIN_DATABASE_URL="${DATABASE_URL}"
+          export MIGRATION_DATABASE_URL="postgresql+psycopg://anomaly_migrator:${MIGRATOR_DB_PASSWORD}@localhost:5432/postgres"
+          uv run python -m security_anomaly.storage provision-roles
+          uv run alembic upgrade head
       - name: Tests de integración
         run: uv run pytest -m integration
 
@@ -65,17 +76,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Preparar .env con una clave temporal
+      - name: Preparar .env con contraseñas temporales distintas
         run: |
           cp .env.example .env
-          password="$(openssl rand -hex 12)"
-          sed -i "s/change-me-use-a-url-safe-password/${password}/g" .env
+          for marker in use-a-url-safe app-url-safe migrator-url-safe maint-url-safe; do
+            password="$(openssl rand -hex 12)"
+            sed -i "s/change-me-${marker}-password/${password}/g" .env
+          done
       - name: Levantar el entorno completo
         run: docker compose up --build -d --wait
-      - name: Comprobar /health y /ready
+      - name: /health responde y /ready da 503 hasta aprovisionar los roles
         run: |
           curl --fail --silent --show-error http://127.0.0.1:8000/health
-          curl --fail --silent --show-error http://127.0.0.1:8000/ready
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8000/ready)"
+          test "${status}" = "503"
+      - name: Aprovisionar roles y migrar (perfil setup)
+        run: docker compose --profile setup run --rm db-setup
+      - name: /ready responde 200 con el rol de aplicación
+        run: curl --fail --silent --show-error http://127.0.0.1:8000/ready
+      - name: Simulación de purga (perfil maintenance)
+        run: docker compose --profile maintenance run --rm db-maintenance
       - name: Logs si falla
         if: failure()
         run: docker compose logs --no-color

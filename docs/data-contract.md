@@ -125,3 +125,18 @@ tras rotarla no es idempotente (la política de rotación se decide en el increm
 - Los identificadores son `la-` + 32 hexadecimales de un HMAC (con la clave) de la posición y la
   línea: reingerir el mismo archivo repite los identificadores y líneas idénticas en posiciones
   distintas no colisionan.
+
+## Persistencia (incremento 2)
+
+Tabla `events` en PostgreSQL 16 (ver `specs/002-persistence/data-model.md`). Clave única
+`(source, event_id)`.
+
+| Se guarda | No se guarda |
+|---|---|
+| `source`, `event_id`, `timestamp` (con zona horaria; se devuelve en UTC), `event_type`, `action`, `outcome` | `username` (el nombre original nunca llega a la base de datos) |
+| `user_pseudonym` (nulo si el evento no tenía usuario), `source_ip` (`inet`), `host` | `out_of_order` y `position`: son relativos al lote de origen |
+| `ingested_at` (la pone la base de datos y no cambia al reguardar) y `batch_id` (identificador del guardado) | Una versión de la clave de seudonimización (se asume una única clave; ver ADR 0003) |
+
+Solo se guardan los eventos válidos; los registros rechazados siguen únicamente en el informe de la
+ingesta. Si llega un evento con la misma clave y contenido distinto, se conserva el original y se
+contabiliza en `existing_with_different_content`. La retención se cuenta desde `ingested_at`.

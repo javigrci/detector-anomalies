@@ -169,7 +169,7 @@ todo lo demás es biblioteca estándar.
 
 ## R10. Operación: CLI mínima y Compose
 
-- **Decisión (requiere tu aprobación, no estaba pedida):** una CLI mínima
+- **Decisión (no estaba pedida; aprobada por el usuario el 2026-11-22):** una CLI mínima
   `python -m security_anomaly.storage` (solo `argparse`, sin dependencias) con dos subcomandos:
   `provision-roles` y `purge [--days N] [--dry-run]`. Es la forma de que una **persona** ejecute la
   purga con las credenciales del rol de mantenimiento (FR-002-20, historia 4); sin ella solo se

@@ -1,27 +1,41 @@
-"""Entorno de Alembic: la URL sale de la configuración, nunca de un archivo versionado."""
+"""Entorno de Alembic: usa el rol migrador (`MIGRATION_DATABASE_URL`), nunca `DATABASE_URL`.
+
+La URL sale de la configuración, no de un archivo versionado, y la API no recibe esa variable
+(FR-002-22). El servicio nunca migra al arrancar.
+"""
+
+import os
 
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from security_anomaly.core.config import load_settings
+from security_anomaly.storage.config import load_migration_settings
+from security_anomaly.storage.schema import metadata
 
 config = context.config
-target_metadata = None  # Los modelos de negocio llegan en el incremento 2.
+target_metadata = metadata
+
+
+def _connect_timeout() -> int:
+    raw = os.environ.get("DB_CONNECT_TIMEOUT_S", "").strip()
+    return int(raw) if raw.isdigit() and 1 <= int(raw) <= 30 else 2
+
+
+def _url() -> str:
+    return load_migration_settings().migration_database_url.get_secret_value()
 
 
 def run_migrations_offline() -> None:
-    url = load_settings().database_url.get_secret_value()
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
+    context.configure(url=_url(), target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online() -> None:
-    settings = load_settings()
     engine = create_engine(
-        settings.database_url.get_secret_value(),
+        _url(),
         poolclass=pool.NullPool,
-        connect_args={"connect_timeout": settings.db_connect_timeout_s},
+        connect_args={"connect_timeout": _connect_timeout()},
     )
     with engine.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

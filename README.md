@@ -3,9 +3,10 @@
 Prototipo de apoyo al análisis de seguridad (SOC): ingerirá logs de auditoría, los puntuará con
 Isolation Forest y expondrá los resultados por API REST.
 
-> **Estado: incrementos 0 y 1.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
-> configuración, logging estructurado, Docker Compose y CI) y la **biblioteca de ingesta y
-> normalización de logs**. Todavía no hay persistencia, modelo, API de negocio ni autenticación.
+> **Estado: incrementos 0, 1 y 2.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
+> configuración, logging estructurado, Docker Compose y CI), la **biblioteca de ingesta y
+> normalización de logs** y la **persistencia de eventos en PostgreSQL** (guardado idempotente,
+> consulta, retención y tres roles de BD). Todavía no hay modelo, API de negocio ni autenticación.
 >
 > Una anomalía no implica un ataque, y el `anomaly_score` futuro no es una probabilidad de
 > intrusión. Los datos sintéticos validan el software, no la capacidad real de detección.
@@ -14,7 +15,8 @@ Documentación del proyecto: [constitución](.specify/memory/constitution.md) ·
 [SPEC.md](SPEC.md) · [roadmap](docs/roadmap.md) · [decisiones](docs/decisions/) ·
 [contrato de datos](docs/data-contract.md) ·
 [especificación del incremento 0](specs/000-base/spec.md) ·
-[especificación del incremento 1](specs/001-ingestion/spec.md)
+[especificación del incremento 1](specs/001-ingestion/spec.md) ·
+[especificación del incremento 2](specs/002-persistence/spec.md)
 
 ## Requisitos
 
@@ -37,8 +39,11 @@ coinciden.
 cp .env.example .env
 ```
 
-Edita `.env` y cambia `POSTGRES_PASSWORD` (y la misma clave dentro de `DATABASE_URL` si ejecutas
-fuera de Compose). La clave debe ser apta para URL: sin `@ : / ? # %`. `.env` está excluido de
+Edita `.env` y sustituye **todas** las contraseñas `change-me-…`: `POSTGRES_PASSWORD` (administrador de
+PostgreSQL) y las tres de los roles de la aplicación, que deben ser **distintas entre sí**
+(`MIGRATOR_DB_PASSWORD`, `APP_DB_PASSWORD`, `MAINT_DB_PASSWORD`; por ejemplo `openssl rand -hex 12`), y
+las mismas claves dentro de las URL si ejecutas fuera de Compose. Las claves deben ser aptas para URL:
+sin `@ : / ? # %`. `.env` está excluido de
 Git; nunca lo subas. Las variables están descritas en
 [specs/000-base/contracts/environment.md](specs/000-base/contracts/environment.md).
 
@@ -57,6 +62,16 @@ datos no se publica en el host. Si el puerto está ocupado, cambia `API_PORT` en
 
 La API arranca aunque la base de datos no esté disponible: `/health` responde igualmente y
 `/ready` indica no disponible hasta que la base de datos responda.
+
+**Primer arranque (incremento 2):** la API usa el rol `anomaly_app`, que aún no existe, así que `/ready`
+responde 503 hasta ejecutar el aprovisionamiento. Los servicios `db-setup` y `db-maintenance` van bajo
+perfiles y **no** arrancan con `up`:
+
+```bash
+docker compose --profile setup run --rm db-setup                         # roles + migraciones → /ready 200
+docker compose --profile maintenance run --rm db-maintenance             # simulación de purga
+docker compose --profile maintenance run --rm db-maintenance purge       # borra de verdad
+```
 
 ## Sondas
 
@@ -124,14 +139,59 @@ solo códigos, campos, posiciones y recuentos, nunca valores de entrada. Para `a
 `ingest_linux_auth(path, policy=…, pseudonymizer=…, start_year=2026, tz=ZoneInfo("Europe/Madrid"))`;
 `generate_synthetic` produce eventos sintéticos reproducibles con etiquetas aparte.
 
-## Migraciones
+## Persistencia (biblioteca y CLI)
 
-Alembic está configurado y conectado a la base de datos, sin migraciones de negocio todavía (las
-tablas llegan en el incremento 2):
+`security_anomaly.storage` guarda los eventos normalizados en PostgreSQL y los consulta. No tiene
+endpoints (llegan en el incremento 5). Cada función recibe un `Engine` de SQLAlchemy creado con el rol
+que le corresponde; contrato completo en
+[specs/002-persistence/contracts/storage-api.md](specs/002-persistence/contracts/storage-api.md).
+
+```python
+from sqlalchemy import create_engine
+
+from security_anomaly.storage import EventFilter, query_events, read_range, save_events
+
+engine = create_engine(DATABASE_URL)  # rol anomaly_app
+summary = save_events(engine, result.events)  # idempotente por (source, event_id) y atómico
+page = query_events(engine, EventFilter(outcome="failure"), limit=100, offset=0)
+for chunk in read_range(engine, start, end):  # [start, end): nunca devuelve timestamp >= end
+    ...
+```
+
+- **Tres roles de BD con mínimos privilegios:** `anomaly_migrator` (propietario del esquema, solo
+  migraciones), `anomaly_app` (solo insertar y consultar) y `anomaly_maint` (solo borrar eventos, para la
+  purga). La aplicación no puede alterar el esquema ni borrar datos.
+- **Solo se guarda el seudónimo del usuario**, nunca el nombre original. Rotar `PSEUDONYM_KEY` tiene
+  consecuencias: ver [docs/decisions/0003-rotacion-pseudonym-key.md](docs/decisions/0003-rotacion-pseudonym-key.md).
+- **Retención:** 90 días por defecto (`RETENTION_DAYS`), contados desde la **ingesta** del evento, no desde
+  su `timestamp`. Nunca se purga sola; la purga es una acción explícita con credenciales propias.
+- **Paginación por tamaño y desplazamiento:** si se insertan eventos entre dos páginas, estas pueden
+  desplazarse. Para lecturas largas que necesitan exactitud se usa `read_range`.
+- Los datos de ejemplo y de los tests son **sintéticos**: nada de lo guardado en el repositorio es
+  tráfico real.
+
+CLI de operación (solo `argparse`; una línea JSON con recuentos, nunca valores ni credenciales):
 
 ```bash
-uv run alembic upgrade head     # con DATABASE_URL definida; termina con éxito sin cambios
+python -m security_anomaly.storage provision-roles       # ADMIN_DATABASE_URL + 3 contraseñas
+python -m security_anomaly.storage purge --dry-run        # MAINTENANCE_DATABASE_URL, RETENTION_DAYS
+python -m security_anomaly.storage purge --days 30
 ```
+
+Códigos de salida: `0` correcto, `2` configuración o argumentos inválidos, `1` error de base de datos.
+
+## Migraciones
+
+El esquema solo lo crea Alembic, con el rol migrador (`MIGRATION_DATABASE_URL`); el servicio **nunca**
+migra al arrancar. Primero hay que aprovisionar los roles:
+
+```bash
+uv run python -m security_anomaly.storage provision-roles
+uv run alembic upgrade head                                 # crea la tabla `events` (0001); repetirlo no cambia nada
+uv run alembic -x destructive=yes downgrade base            # DESTRUCTIVO: borra los eventos; pide autorización explícita
+```
+
+`downgrade` se niega si la tabla tiene filas salvo con `-x destructive=yes`.
 
 ## Integración continua
 
@@ -139,8 +199,10 @@ uv run alembic upgrade head     # con DATABASE_URL definida; termina con éxito 
 pull request, con tres jobs:
 
 1. `quality`: Ruff (lint y formato), mypy y tests unitarios.
-2. `integration`: tests contra un PostgreSQL 16 real y `alembic upgrade head`.
-3. `compose-smoke`: levanta el entorno con Compose y consulta `/health` y `/ready`.
+2. `integration`: aprovisiona los roles, aplica `alembic upgrade head` y ejecuta los tests contra un
+   PostgreSQL 16 real.
+3. `compose-smoke`: levanta el entorno con Compose, comprueba `/health` y que `/ready` da 503 antes del
+   aprovisionamiento, ejecuta `db-setup` y comprueba `/ready` 200 y la simulación de purga.
 
 ## Límites conocidos
 

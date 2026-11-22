@@ -22,13 +22,46 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       DB_CONNECT_TIMEOUT_S: ${DB_CONNECT_TIMEOUT_S:-2}
       API_PORT: ${API_PORT:-8000}
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # La API usa el rol de aplicación (solo insertar y consultar); no conoce otras credenciales.
+      DATABASE_URL: postgresql+psycopg://anomaly_app:${APP_DB_PASSWORD:?Define APP_DB_PASSWORD en .env (copia .env.example)}@db:5432/${POSTGRES_DB}
     depends_on:
       db:
         condition: service_started  # la API arranca aunque la base de datos tarde o falle
     ports:
       - "127.0.0.1:${API_PORT:-8000}:${API_PORT:-8000}"
     restart: unless-stopped
+
+  # Servicios de un solo uso bajo perfiles: NO arrancan con `docker compose up`.
+  # Hasta ejecutar `db-setup`, /ready responde 503 (el rol de aplicación aún no existe).
+  db-setup:
+    build: .
+    profiles: ["setup"]
+    environment:
+      ADMIN_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      MIGRATION_DATABASE_URL: postgresql+psycopg://anomaly_migrator:${MIGRATOR_DB_PASSWORD:?Define MIGRATOR_DB_PASSWORD en .env (copia .env.example)}@db:5432/${POSTGRES_DB}
+      MIGRATOR_DB_PASSWORD: ${MIGRATOR_DB_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Define APP_DB_PASSWORD en .env (copia .env.example)}
+      MAINT_DB_PASSWORD: ${MAINT_DB_PASSWORD:?Define MAINT_DB_PASSWORD en .env (copia .env.example)}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "python -m security_anomaly.storage provision-roles && alembic upgrade head"]
+    restart: "no"
+
+  db-maintenance:
+    build: .
+    profiles: ["maintenance"]
+    environment:
+      MAINTENANCE_DATABASE_URL: postgresql+psycopg://anomaly_maint:${MAINT_DB_PASSWORD:?Define MAINT_DB_PASSWORD en .env (copia .env.example)}@db:5432/${POSTGRES_DB}
+      RETENTION_DAYS: ${RETENTION_DAYS:-90}
+    depends_on:
+      db:
+        condition: service_healthy
+    # `run --rm db-maintenance purge` añade `purge` al entrypoint (borra de verdad);
+    # sin argumentos solo informa (simulación).
+    entrypoint: ["python", "-m", "security_anomaly.storage"]
+    command: ["purge", "--dry-run"]
+    restart: "no"
 
 volumes:
   db-data:

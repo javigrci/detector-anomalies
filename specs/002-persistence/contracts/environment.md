@@ -24,5 +24,9 @@ Reglas:
   a propósito.
 - Los valores vacíos se tratan como ausentes; los errores nombran la variable y nunca su valor.
 - `.env.example` incluye todas con marcadores `change-me-…`; `.env` no se versiona.
+- En los **tests de integración** y en el job `integration` de la CI, `DATABASE_URL` es la conexión de
+  administrador de PostgreSQL (superusuario de la base de datos efímera): sirve para crear la base de
+  datos de prueba y aprovisionar los roles. Los tests construyen las URL de los tres roles al vuelo.
+  En Compose y en producción sigue siendo la URL del rol `anomaly_app`.
 - La API no recibe nunca `MAINTENANCE_DATABASE_URL`, `ADMIN_DATABASE_URL` ni
   `MIGRATION_DATABASE_URL`.

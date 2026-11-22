@@ -43,6 +43,8 @@ def test_integration_job_uses_a_real_postgres_16_service() -> None:
     assert "image: postgres:16" in text
     assert "uv run pytest -m integration" in text
     assert "uv run alembic upgrade head" in text
+    assert "provision-roles" in text
+    assert text.index("provision-roles") < text.index("uv run alembic upgrade head")
 
 
 def test_compose_smoke_checks_both_probes_and_cleans_up() -> None:
@@ -65,3 +67,16 @@ def test_workflow_requests_least_privilege_and_has_no_inline_secrets() -> None:
     assert "permissions:" in text
     assert "contents: read" in text
     assert "secrets." not in text
+
+
+def test_compose_smoke_provisions_roles_before_the_ready_check() -> None:
+    text = _text()
+    smoke = text[text.index("compose-smoke:") :]
+    assert "--profile setup run --rm db-setup" in smoke
+    assert "--profile maintenance run --rm db-maintenance" in smoke
+    setup = smoke.index("--profile setup run --rm db-setup")
+    assert smoke.index("503") < setup < smoke.rindex("/ready")
+    # Cada contraseña de rol se sustituye por un valor aleatorio distinto.
+    assert smoke.count("openssl rand -hex 12") == 1  # dentro de un bucle: una por marcador
+    for marker in ("use-a-url-safe", "app-url-safe", "migrator-url-safe", "maint-url-safe"):
+        assert marker in smoke

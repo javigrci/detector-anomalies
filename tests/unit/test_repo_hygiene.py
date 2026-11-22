@@ -20,6 +20,15 @@ EXPECTED_VARS = {
     "INGEST_MAX_FIELD_LENGTH",
     "INGEST_TIMESTAMP_MIN",
     "INGEST_TIMESTAMP_MAX",
+    "MIGRATION_DATABASE_URL",
+    "MAINTENANCE_DATABASE_URL",
+    "ADMIN_DATABASE_URL",
+    "MIGRATOR_DB_PASSWORD",
+    "APP_DB_PASSWORD",
+    "MAINT_DB_PASSWORD",
+    "RETENTION_DAYS",
+    "QUERY_DEFAULT_LIMIT",
+    "QUERY_MAX_LIMIT",
 }
 
 
@@ -41,6 +50,15 @@ def test_env_example_contains_only_placeholder_secrets() -> None:
     assert "change-me" in values["POSTGRES_PASSWORD"]
     assert "change-me" in values["DATABASE_URL"]
     assert "change-me" in values["PSEUDONYM_KEY"]
+    for name in (
+        "MIGRATION_DATABASE_URL",
+        "MAINTENANCE_DATABASE_URL",
+        "ADMIN_DATABASE_URL",
+        "MIGRATOR_DB_PASSWORD",
+        "APP_DB_PASSWORD",
+        "MAINT_DB_PASSWORD",
+    ):
+        assert "change-me" in values[name], name
 
 
 def test_dotenv_is_gitignored() -> None:

@@ -2,7 +2,7 @@
 
 > **Para quien retome el trabajo (persona o una sesión nueva de Claude Code):** lee este documento
 > entero antes de tocar nada. Resume dónde estamos, qué se decidió y por qué, qué falta aprobar y
-> cómo preparar un equipo nuevo. Está escrito el **2026-11-21**; si el repositorio ha avanzado,
+> cómo preparar un equipo nuevo. Escrito el **2026-11-21** y actualizado el **2026-11-22** (incremento 2 implementado); si el repositorio ha avanzado,
 > contrasta con `git log` y con los `tasks.md` de cada incremento, que mandan sobre este texto.
 
 ## 1. Qué es el proyecto
@@ -32,16 +32,16 @@ cumple por proceso (no integrar con la CI en rojo).
 |---|---|---|
 | 0 `000-base` | Esqueleto: FastAPI, `/health` y `/ready`, configuración, logging JSON con `request_id`, Docker Compose, CI | ✅ Hecho y en `main` (CI verde, run 43423457154) |
 | 1 `001-ingestion` | Biblioteca de ingesta: JSON/CSV, `auth.log` de Linux, normalización, rechazos sin valores, HMAC, datos sintéticos | ✅ Hecho y en `main` (CI verde, run 44780849063) |
-| 2 `002-persistence` | PostgreSQL, migración, guardado idempotente, consultas, retención/purga, tres roles de BD | 🟡 **Spec, clarificación y plan hechos; falta `tasks.md`** |
+| 2 `002-persistence` | PostgreSQL, migración, guardado idempotente, consultas, retención/purga, tres roles de BD | 🟡 **Implementado y verificado en local (69 tareas `[X]`, `verification.md`); falta commit, push y CI en verde** |
 | 3 `003-feature-engineering` | Características por evento y por ventana de 5 min, sin fuga de futuro | ⬜ |
 | 4 `004-model-training` | Entrenamiento, calibración, versiones del modelo | ⬜ |
 | 5 `005-inference-api` | API de puntuación y consulta, API key con roles `reader`/`admin` | ⬜ |
 | 7 `007-deployment` | Compose completo, runbook, model card y prueba de extremo a extremo | ⬜ |
 | 6 `006-dashboard` | Dashboard Streamlit (**fuera del MVP**, fase 2) | ⬜ |
 
-Resultado verificado al cerrar el incremento 1: **329 tests unitarios + 2 de integración** (con
-PostgreSQL real), Ruff, formato y mypy estricto en verde, sin dependencias nuevas desde el
-incremento 0. El MVP son los incrementos 0 a 5 más el 7 (llevamos 2 de 7). Los plazos no se han
+Resultado verificado en local al implementar el incremento 2: **490 tests unitarios + 109 de integración**
+(con PostgreSQL real), Ruff, formato y mypy estricto en verde, sin dependencias nuevas desde el
+incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 2 de 7; el 2 pendiente de CI). Los plazos no se han
 medido: solo el orden y las puertas de aceptación son fiables.
 
 ## 3. Dónde está cada cosa
@@ -53,7 +53,7 @@ medido: solo el orden y las puertas de aceptación son fiables.
 | Reglas operativas para agentes | `AGENTS.md` (`CLAUDE.md` solo importa `AGENTS.md`) |
 | Hoja de ruta (MVP y fases) | `docs/roadmap.md` |
 | Contrato de datos del evento | `docs/data-contract.md` |
-| Decisiones (ADR) | `docs/decisions/0001-decisiones-iniciales.md`, `0002-dependencias-base.md` |
+| Decisiones (ADR) | `docs/decisions/0001-decisiones-iniciales.md`, `0002-dependencias-base.md`, `0003-rotacion-pseudonym-key.md` |
 | Una carpeta por incremento | `specs/NNN-nombre/`: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md`, `verification.md`, `checklists/` |
 | Feature activa de Spec Kit | `.specify/feature.json` (ahora apunta a `specs/002-persistence`) |
 | Comandos de Spec Kit para Claude | `.claude/skills/speckit-*` (versionados) |
@@ -88,30 +88,30 @@ purga); paginación por tamaño y desplazamiento (SPEC §6.2); sin tabla de lote
 
 ## 5. Qué falta ahora mismo (empieza aquí)
 
-El incremento 2 tiene spec, plan, investigación, modelo de datos, contratos y quickstart. **Necesita
-tu aprobación** antes de `/speckit-tasks` para tres componentes que no estaban pedidos expresamente
-(AGENTS.md regla 3; justificados en `specs/002-persistence/research.md` R10):
+El incremento 2 está **implementado y verificado en local** (ver `specs/002-persistence/verification.md`).
+El usuario aprobó el 2026-11-22 la CLI mínima, los perfiles `setup`/`maintenance` de Compose y las variables
+de entorno nuevas. Queda:
 
-1. Una **CLI mínima** `python -m security_anomaly.storage` con `provision-roles` y `purge [--days N]
-   [--dry-run]` (solo `argparse`): es la forma de que una persona ejecute la purga con las
-   credenciales del rol de mantenimiento.
-2. Dos **servicios de Compose bajo perfiles** (`db-setup` y `db-maintenance`) que no arrancan con
-   `docker compose up`, para que migrar y purgar sean explícitos.
-3. **Variables de entorno nuevas**: una URL por rol, tres contraseñas y el periodo de retención.
+1. **Commit y push** (T068 y T069; requieren autorización explícita) y comprobar que los cuatro jobs de la CI
+   quedan en verde. El job `integration` (aprovisionamiento con la CLI real) y el `compose-smoke` modificado
+   **no se han ejecutado todavía en GitHub**. Anotar el identificador del run en `verification.md`.
+2. Si la CI falla, corregir antes de dar el incremento por cerrado (el criterio de aceptación manda).
+3. Después, el **incremento 3** (`003-feature-engineering`): `/speckit-specify` → … Consumirá
+   `read_range` (lectura `[desde, hasta)` sin fuga de futuro).
 
-Consecuencias a recordar: la API en Compose conectará con el rol `anomaly_app` y `/ready` dará 503
-hasta ejecutar `db-setup`; el test de integración de Alembic cambia (ahora se crea `events`); y la CI
-(`compose-smoke`) tendrá que ejecutar `db-setup`.
-
-Siguiente secuencia del ciclo: aprobar lo anterior → `/speckit-tasks` → `/speckit-analyze` (corregir
-lo que salga) → commit → `/speckit-implement` → cierre con `verification.md`. Después, el incremento 3.
+Para trabajar en local: la API en Compose usa el rol `anomaly_app`; `/ready` da 503 hasta ejecutar
+`docker compose --profile setup run --rm db-setup`. Hay que rellenar en `.env` las tres contraseñas de rol
+(distintas entre sí) además de `POSTGRES_PASSWORD`.
 
 ## 6. Pendientes y riesgos conocidos
 
 - **Validar el adaptador de `auth.log` con un log real de un servidor.** Los fixtures de Debian/Ubuntu y
   RHEL son sintéticos (escritos a partir del formato conocido); falta contrastar el recuento de líneas
   ignoradas con datos reales.
-- **ADR 0003 (rotación de `PSEUDONYM_KEY`)**: se escribe en el incremento 2; lo decidido ya está en la spec.
+- **ADR 0003 (rotación de `PSEUDONYM_KEY`)**: escrito en `docs/decisions/0003-rotacion-pseudonym-key.md` (aceptado).
+- **Runbook (incremento 7):** `psycopg.sql` escribe las contraseñas de rol como literales en el DDL; no activar
+  `log_statement = ddl|all` en producción.
+- Reguardar un lote de 10.000 eventos ya existentes tarda ≈4 s (la comparación de contenido); aceptable hoy.
 - **Aviso heredado:** `starlette.testclient` avisa de que `httpx` está en desuso y recomienda `httpx2`.
   No afecta hoy; conviene revisarlo antes del incremento 5.
 - **Cobertura mínima de tests:** sin umbral, diferida.
@@ -147,11 +147,12 @@ git clone git@github.com:javigrci/detector-anomalies.git && cd detector-anomalie
 uv sync --frozen                                   # instala Python 3.12 y las dependencias
 cp .env.example .env                               # y sustituye TODAS las contraseñas `change-me-…`
 uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run mypy tests
-uv run pytest -q -m "not integration"              # 329 tests
+uv run pytest -q -m "not integration"              # 490 tests
 ```
 
 Tests de integración (PostgreSQL real): levanta una temporal con una clave aleatoria que solo vive en tu
-terminal.
+terminal. `DATABASE_URL` es aquí la conexión de **administrador** (los tests crean una base de datos
+efímera y los tres roles al vuelo).
 
 ```bash
 export PGPW="$(openssl rand -hex 12)"
