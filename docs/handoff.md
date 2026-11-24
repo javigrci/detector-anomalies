@@ -33,7 +33,7 @@ cumple por proceso (no integrar con la CI en rojo).
 | 0 `000-base` | Esqueleto: FastAPI, `/health` y `/ready`, configuración, logging JSON con `request_id`, Docker Compose, CI | ✅ Hecho y en `main` (CI verde, run 43423457154) |
 | 1 `001-ingestion` | Biblioteca de ingesta: JSON/CSV, `auth.log` de Linux, normalización, rechazos sin valores, HMAC, datos sintéticos | ✅ Hecho y en `main` (CI verde, run 44780849063) |
 | 2 `002-persistence` | PostgreSQL, migración, guardado idempotente, consultas, retención/purga, tres roles de BD | ✅ Hecho y en `main` (CI verde, run 44964800395, commit `94a986f`) |
-| 3 `003-feature-engineering` | Características por evento y por ventana de 5 min, sin fuga de futuro | ⬜ |
+| 3 `003-feature-engineering` | Características por evento y por ventana de 5 min, sin fuga de futuro | 🟡 **Implementado y verificado en local (`verification.md`); falta commit, push y CI en verde** |
 | 4 `004-model-training` | Entrenamiento, calibración, versiones del modelo | ⬜ |
 | 5 `005-inference-api` | API de puntuación y consulta, API key con roles `reader`/`admin` | ⬜ |
 | 7 `007-deployment` | Compose completo, runbook, model card y prueba de extremo a extremo | ⬜ |
@@ -41,7 +41,7 @@ cumple por proceso (no integrar con la CI en rojo).
 
 Resultado verificado en local al implementar el incremento 2: **490 tests unitarios + 109 de integración**
 (con PostgreSQL real), Ruff, formato y mypy estricto en verde, sin dependencias nuevas desde el
-incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 3 de 7: 0, 1 y 2). Los plazos no se han
+incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 3 de 7: 0, 1 y 2; el 3 pendiente de CI). Los plazos no se han
 medido: solo el orden y las puertas de aceptación son fiables.
 
 ## 3. Dónde está cada cosa
@@ -53,7 +53,7 @@ medido: solo el orden y las puertas de aceptación son fiables.
 | Reglas operativas para agentes | `AGENTS.md` (`CLAUDE.md` solo importa `AGENTS.md`) |
 | Hoja de ruta (MVP y fases) | `docs/roadmap.md` |
 | Contrato de datos del evento | `docs/data-contract.md` |
-| Decisiones (ADR) | `docs/decisions/0001-decisiones-iniciales.md`, `0002-dependencias-base.md`, `0003-rotacion-pseudonym-key.md` |
+| Decisiones (ADR) | `docs/decisions/0001-decisiones-iniciales.md`, `0002-dependencias-base.md`, `0003-rotacion-pseudonym-key.md`, `0004-semantica-ventana-y-orden-causal.md` |
 | Una carpeta por incremento | `specs/NNN-nombre/`: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md`, `verification.md`, `checklists/` |
 | Feature activa de Spec Kit | `.specify/feature.json` (ahora apunta a `specs/002-persistence`) |
 | Comandos de Spec Kit para Claude | `.claude/skills/speckit-*` (versionados) |
@@ -88,10 +88,21 @@ purga); paginación por tamaño y desplazamiento (SPEC §6.2); sin tabla de lote
 
 ## 5. Qué falta ahora mismo (empieza aquí)
 
-El incremento 2 está **cerrado**: CI verde (run 44964800395) y `verification.md` completo. Siguiente: el
-**incremento 3** (`003-feature-engineering`): `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` →
-`/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`. Consumirá `read_range` (lectura `[desde, hasta)`
-sin fuga de futuro) y debe calcular características por evento y por ventana de 5 min sin fuga del futuro.
+El incremento 3 (`003-feature-engineering`) está **implementado y verificado en local** (ver
+`specs/003-feature-engineering/verification.md`) y **sin commitear**. Desde el 2026-11-24 el ciclo de cada
+incremento se ejecuta en **modo automático** (specify → clarify → plan → tasks → analyze → implement, siguiendo
+las recomendaciones del asistente); los commits y pushes los confirma el usuario. Queda:
+
+1. **Commit y push** del incremento 3 (T050 y T051; requieren autorización explícita) y comprobar que los tres
+   jobs de la CI quedan en verde. Anotar el run en `verification.md`.
+2. Después, el **incremento 4** (`004-model-training`): `/speckit-specify` … Consumirá `features_for_range` y
+   `compute_features` y guardará el esquema de características (versión y huella) junto al modelo. Necesitará un
+   ADR para `scikit-learn` (y con él `numpy`).
+
+Decisiones del incremento 3 (ADR 0004): orden total `(timestamp, source, event_id)` más estricto que
+«menor o igual» de SPEC §4.4; ventana deslizante `(t − 5 min, t]`; agregación por `(source, IP)` y
+`(source, usuario)` sumando hosts; `context_complete` declarado por quien llama (`history_start`); ausentes a 0
+con `has_ip`/`has_user`.
 
 Para trabajar en local: la API en Compose usa el rol `anomaly_app`; `/ready` da 503 hasta ejecutar
 `docker compose --profile setup run --rm db-setup`. Hay que rellenar en `.env` las tres contraseñas de rol

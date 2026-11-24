@@ -3,10 +3,11 @@
 Prototipo de apoyo al análisis de seguridad (SOC): ingerirá logs de auditoría, los puntuará con
 Isolation Forest y expondrá los resultados por API REST.
 
-> **Estado: incrementos 0, 1 y 2.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
+> **Estado: incrementos 0, 1, 2 y 3.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
 > configuración, logging estructurado, Docker Compose y CI), la **biblioteca de ingesta y
 > normalización de logs** y la **persistencia de eventos en PostgreSQL** (guardado idempotente,
-> consulta, retención y tres roles de BD). Todavía no hay modelo, API de negocio ni autenticación.
+> consulta, retención y tres roles de BD) y las **características causales** del modelo (por evento y por
+> ventana de 5 minutos). Todavía no hay modelo, API de negocio ni autenticación.
 >
 > Una anomalía no implica un ataque, y el `anomaly_score` futuro no es una probabilidad de
 > intrusión. Los datos sintéticos validan el software, no la capacidad real de detección.
@@ -16,7 +17,8 @@ Documentación del proyecto: [constitución](.specify/memory/constitution.md) ·
 [contrato de datos](docs/data-contract.md) ·
 [especificación del incremento 0](specs/000-base/spec.md) ·
 [especificación del incremento 1](specs/001-ingestion/spec.md) ·
-[especificación del incremento 2](specs/002-persistence/spec.md)
+[especificación del incremento 2](specs/002-persistence/spec.md) ·
+[especificación del incremento 3](specs/003-feature-engineering/spec.md)
 
 ## Requisitos
 
@@ -179,6 +181,37 @@ python -m security_anomaly.storage purge --days 30
 ```
 
 Códigos de salida: `0` correcto, `2` configuración o argumentos inválidos, `1` error de base de datos.
+
+## Características (biblioteca)
+
+`security_anomaly.features` convierte eventos en vectores de características para el modelo del
+incremento 4: por evento (hora UTC cíclica, día de la semana, tipo, acción, resultado y fuente) y por
+ventana deslizante de 5 minutos (eventos, fallos, tasa de fallos y usuarios distintos por IP; IPs distintas
+por usuario). No tiene interfaz ni guarda nada. Esquema completo en
+[specs/003-feature-engineering/contracts/feature-schema.md](specs/003-feature-engineering/contracts/feature-schema.md).
+
+```python
+from datetime import UTC, datetime
+
+from security_anomaly.features import compute_event_features, compute_features, features_for_range
+
+history_start = datetime(2026, 1, 1, tzinfo=UTC)  # desde cuándo hay historia completa
+vectors = compute_features(events, history_start=history_start)  # un conjunto (entrenamiento)
+vector = compute_event_features(
+    event, previous, history_start=history_start
+)  # un evento (inferencia)
+rango = features_for_range(engine, start, end, history_start=history_start)  # leído de PostgreSQL
+```
+
+- **Sin fuga de futuro:** el vector de un evento solo usa los eventos que lo preceden en el orden total
+  `(timestamp, source, event_id)` más él mismo, dentro de `(t - 5 min, t]`. Añadir, quitar o modificar
+  eventos posteriores no cambia ningún vector (ADR 0004).
+- **Mismo pipeline:** lotes, evento individual y rango usan el mismo motor y dan el mismo vector.
+- **Esquema versionado:** versión y huella fijadas en un test; los vectores nunca llevan IP, usuario, host
+  ni `event_id` como característica.
+- `context_complete` es falso cuando la ventana empieza antes de `history_start` (lo declara quien llama).
+- Las características describen comportamiento, no demuestran que haya un ataque, y los datos de ejemplo
+  y de los tests son **sintéticos**.
 
 ## Migraciones
 

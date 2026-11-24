@@ -140,3 +140,21 @@ Tabla `events` en PostgreSQL 16 (ver `specs/002-persistence/data-model.md`). Cla
 Solo se guardan los eventos válidos; los registros rechazados siguen únicamente en el informe de la
 ingesta. Si llega un evento con la misma clave y contenido distinto, se conserva el original y se
 contabiliza en `existing_with_different_content`. La retención se cuenta desde `ingested_at`.
+
+## Características (incremento 3)
+
+Vector por evento con el esquema v1 (`specs/003-feature-engineering/contracts/feature-schema.md`; versión y
+huella fijadas en `tests/unit/features/test_schema_golden.py`). Identifica al evento con `(source,
+event_id)` y `timestamp` fuera de `features`, e incluye `schema_version` y `context_complete`.
+
+| Ámbito | Características |
+|---|---|
+| Por evento (UTC) | `hour_sin`, `hour_cos` (hora entera, 12 decimales), `day_of_week` (lunes = 0), `event_type`, `action`, `outcome`, `source` |
+| Por ventana `(t - 5 min, t]` | `ip_event_count`, `ip_failure_count`, `ip_failure_rate`, `ip_distinct_users` (por `(source, IP)`), `user_distinct_ips` (por `(source, usuario)`) |
+| Indicadores | `has_ip`, `has_user` |
+
+Reglas: historia = eventos que preceden al evento en `(timestamp, source, event_id)` más él mismo (los
+empatados posteriores no cuentan); el evento puntuado cuenta en su ventana; sin IP o sin usuario, las
+agregadas valen 0 y el indicador, 0; los hosts de una misma fuente se suman y `host` no forma parte de
+ninguna clave. Los vectores nunca contienen IP, seudónimo, host ni `event_id` como característica. Ver
+`docs/decisions/0004-semantica-ventana-y-orden-causal.md`.
