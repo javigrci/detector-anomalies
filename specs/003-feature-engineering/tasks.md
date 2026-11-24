@@ -200,8 +200,8 @@ description: "Tareas del incremento 3 — Ingeniería de características"
 - [X] T047 Ejecutar la calidad completa: `uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run mypy tests`, `uv run pytest -q -m "not integration"` y `uv run pytest -q -m integration` contra PostgreSQL temporal; registrar los resultados reales sin editarlos; si algo falla, el incremento no está cerrado (AGENTS.md reglas 6 y 8)
 - [X] T048 Ejecutar el `quickstart.md` completo (escenarios 1 a 8) y escribir `specs/003-feature-engineering/verification.md` con resultados reales, tiempos y memoria medidos (SC-005, SC-008) junto con hardware, volumen y condiciones, matriz FR/SC → test, riesgos y decisiones pendientes; marcar `[X]` solo lo comprobado; comprobar con una mutación que los tests de fuga fallan si el motor mira un evento posterior (T047)
 - [X] T049 Confirmar que no hay dependencias nuevas (`git diff` de `pyproject.toml` y `uv.lock` vacío), ni endpoints, ni variables de entorno nuevas, ni persistencia de características, ni secretos en el diff (FR-003-26; AGENTS.md regla 3) (T047)
-- [ ] T050 **Requiere autorización explícita:** commit en `main` con el mensaje de cierre en español y la línea `Co-Authored-By` fijada por el entorno (T048, T049)
-- [ ] T051 **Requiere autorización explícita:** `git push` y comprobar que los tres jobs de la CI quedan en verde, anotando el identificador del run en `verification.md` (T050)
+- [X] T050 **Requiere autorización explícita:** commit en `main` con el mensaje de cierre en español y la línea `Co-Authored-By` fijada por el entorno (T048, T049)
+- [X] T051 **Requiere autorización explícita:** `git push` y comprobar que los tres jobs de la CI quedan en verde, anotando el identificador del run en `verification.md` (T050)
 
 ---
 

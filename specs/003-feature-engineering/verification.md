@@ -1,8 +1,8 @@
 # Verificación del incremento 3 — Ingeniería de características
 
-**Fecha:** 2026-11-24 · **Estado:** implementación completa y verificada en local; **sin commitear**. Commit,
-push y CI de GitHub pendientes de la confirmación del usuario (T050 y T051). Todos los resultados de este
-documento son salidas reales. El ciclo (specify → clarify → plan → tasks → analyze → implement) se ejecutó en
+**Fecha:** 2026-11-24 · **Estado:** cerrado. Implementación verificada en local y **CI de GitHub en verde**
+(run #10, commit `72e1412`; los tres jobs en verde según el usuario, que lo comprobó en la interfaz de GitHub porque
+el repositorio es privado y no pude consultarlo). Todos los resultados de este documento son salidas reales. El ciclo (specify → clarify → plan → tasks → analyze → implement) se ejecutó en
 modo automático, siguiendo las recomendaciones del asistente.
 
 ## 1. Puertas de calidad (T047)
@@ -115,16 +115,16 @@ Recomendaciones del asistente, aceptadas sin pausas por indicación del usuario:
    que persista los vectores (incremento 5) decide cuándo recalcular.
 5. **Eventos con claves repetidas en el modo `presorted`:** solo se detectan los de clave idéntica consecutivos; el modo
    por defecto detecta cualquier `(source, event_id)` repetido.
-6. **Sin CI todavía:** nada de este incremento se ha ejecutado en GitHub. Los tests de integración se ejecutaron contra un
-   PostgreSQL 16 temporal con autenticación `trust`, como en el incremento 2.
+6. **CI:** antes del push, los tests de integración se ejecutaron contra un PostgreSQL 16 temporal con autenticación
+   `trust`, como en el incremento 2; después, en GitHub: run #10 con los tres jobs en verde.
 
 ## 9. Riesgos y decisiones pendientes
 
-- Confirmar la CI tras el push; los tests de rendimiento tienen umbrales generosos, pero un runner lento podría
-  acercarse al de 100 ms del evento individual (p95 medido: 12–16 ms en local).
+- Los tests de rendimiento tienen umbrales generosos y pasaron en la CI (run #10); aun así, un runner lento podría
+  acercarse al de 100 ms del evento individual (p95 medido en local: 12–16 ms).
 - `day_of_week` se entrega como entero 0–6; su codificación (cíclica u otra) la decide el incremento 4.
 - Proponer una aclaración de SPEC §4.4/§4.5 para recoger las precisiones del ADR 0004 (no se ha editado SPEC.md).
 
 ## 10. Commits
 
-Pendientes de la confirmación explícita del usuario (T050 y T051).
+`72e1412` (T050), subido a `main` con autorización explícita del usuario (T051).
