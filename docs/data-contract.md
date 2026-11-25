@@ -158,3 +158,19 @@ empatados posteriores no cuentan); el evento puntuado cuenta en su ventana; sin 
 agregadas valen 0 y el indicador, 0; los hosts de una misma fuente se suman y `host` no forma parte de
 ninguna clave. Los vectores nunca contienen IP, seudónimo, host ni `event_id` como característica. Ver
 `docs/decisions/0004-semantica-ventana-y-orden-causal.md`.
+
+## Modelo y versiones (incremento 4)
+
+Dos tablas nuevas (migración `0002`; `specs/004-model-training/data-model.md`): `training_runs` (cada
+ejecución: estado `running`, `succeeded` o `failed`, latido, tamaños de los conjuntos, huella del dataset y
+versión producida) y `model_versions` (cada versión: esquema de características con versión y huella,
+parámetros, métricas, huella del dataset, nombre y huella SHA-256 del artefacto, versiones de las librerías y
+si está activa). A lo sumo un entrenamiento `running` y una versión `active`.
+
+| Se guarda | No se guarda |
+|---|---|
+| Versión, esquema (versión y huella), parámetros, métricas, fechas, huellas y versiones de librerías | IPs, seudónimos, hosts, identificadores de evento ni valores de eventos |
+| Un archivo de modelo por versión en el directorio interno `MODEL_DIR` | Archivos de modelo en Git ni en rutas recibidas de usuarios |
+
+La puntuación de anomalía es un **percentil** frente a la calibración (de 0 a 1), no una probabilidad de
+ataque. La severidad usa umbrales provisionales (0,80 y 0,95). Ver `docs/decisions/0006-confianza-de-artefactos-y-concurrencia.md`.

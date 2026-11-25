@@ -2,7 +2,7 @@
 
 > **Para quien retome el trabajo (persona o una sesión nueva de Claude Code):** lee este documento
 > entero antes de tocar nada. Resume dónde estamos, qué se decidió y por qué, qué falta aprobar y
-> cómo preparar un equipo nuevo. Escrito el **2026-11-21** y actualizado el **2026-11-22** (incremento 2 implementado); si el repositorio ha avanzado,
+> cómo preparar un equipo nuevo. Escrito el **2026-11-21** y actualizado el **2026-11-24** (incremento 4 implementado); si el repositorio ha avanzado,
 > contrasta con `git log` y con los `tasks.md` de cada incremento, que mandan sobre este texto.
 
 ## 1. Qué es el proyecto
@@ -34,14 +34,14 @@ cumple por proceso (no integrar con la CI en rojo).
 | 1 `001-ingestion` | Biblioteca de ingesta: JSON/CSV, `auth.log` de Linux, normalización, rechazos sin valores, HMAC, datos sintéticos | ✅ Hecho y en `main` (CI verde, run 44780849063) |
 | 2 `002-persistence` | PostgreSQL, migración, guardado idempotente, consultas, retención/purga, tres roles de BD | ✅ Hecho y en `main` (CI verde, run 44964800395, commit `94a986f`) |
 | 3 `003-feature-engineering` | Características por evento y por ventana de 5 min, sin fuga de futuro | ✅ Hecho y en `main` (CI verde, run #10, commit `72e1412`) |
-| 4 `004-model-training` | Entrenamiento, calibración, versiones del modelo | ⬜ |
+| 4 `004-model-training` | Entrenamiento, calibración, evaluación, versiones y activación manual | 🟡 **Implementado y verificado en local (`verification.md`); falta commit, push y CI en verde** |
 | 5 `005-inference-api` | API de puntuación y consulta, API key con roles `reader`/`admin` | ⬜ |
 | 7 `007-deployment` | Compose completo, runbook, model card y prueba de extremo a extremo | ⬜ |
 | 6 `006-dashboard` | Dashboard Streamlit (**fuera del MVP**, fase 2) | ⬜ |
 
 Resultado verificado en local al implementar el incremento 2: **490 tests unitarios + 109 de integración**
 (con PostgreSQL real), Ruff, formato y mypy estricto en verde, sin dependencias nuevas desde el
-incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 4 de 7: 0, 1, 2 y 3). Los plazos no se han
+incremento 0 (al cerrar el incremento 1 eran 329 + 2). El MVP son los incrementos 0 a 5 más el 7 (llevamos 4 de 7: 0, 1, 2 y 3; el 4 pendiente de CI). Los plazos no se han
 medido: solo el orden y las puertas de aceptación son fiables.
 
 ## 3. Dónde está cada cosa
@@ -53,7 +53,7 @@ medido: solo el orden y las puertas de aceptación son fiables.
 | Reglas operativas para agentes | `AGENTS.md` (`CLAUDE.md` solo importa `AGENTS.md`) |
 | Hoja de ruta (MVP y fases) | `docs/roadmap.md` |
 | Contrato de datos del evento | `docs/data-contract.md` |
-| Decisiones (ADR) | `docs/decisions/0001-decisiones-iniciales.md`, `0002-dependencias-base.md`, `0003-rotacion-pseudonym-key.md`, `0004-semantica-ventana-y-orden-causal.md` |
+| Decisiones (ADR) | `docs/decisions/0001-decisiones-iniciales.md`, `0002-dependencias-base.md`, `0003-rotacion-pseudonym-key.md`, `0004-semantica-ventana-y-orden-causal.md`, `0005-scikit-learn.md`, `0006-confianza-de-artefactos-y-concurrencia.md` |
 | Una carpeta por incremento | `specs/NNN-nombre/`: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md`, `verification.md`, `checklists/` |
 | Feature activa de Spec Kit | `.specify/feature.json` (ahora apunta a `specs/002-persistence`) |
 | Comandos de Spec Kit para Claude | `.claude/skills/speckit-*` (versionados) |
@@ -88,21 +88,29 @@ purga); paginación por tamaño y desplazamiento (SPEC §6.2); sin tabla de lote
 
 ## 5. Qué falta ahora mismo (empieza aquí)
 
-El incremento 3 está **cerrado**: CI verde (run #10, commit `72e1412`) y `verification.md` completo. Desde el
-2026-11-24 el ciclo de cada incremento se ejecuta en **modo automático** (specify → clarify → plan → tasks →
-analyze → implement, siguiendo las recomendaciones del asistente); los commits y pushes los confirma el usuario.
-Siguiente: el **incremento 4** (`004-model-training`): `/speckit-specify` … Consumirá `features_for_range` y
-`compute_features`, guardará el esquema de características (versión y huella) junto al modelo y necesitará un ADR
-para `scikit-learn` (y con él `numpy`).
+El incremento 4 (`004-model-training`) está **implementado y verificado en local** (ver
+`specs/004-model-training/verification.md`) y **sin commitear**. El ciclo de cada incremento se ejecuta en
+**modo automático** (specify → clarify → plan → tasks → analyze → implement, siguiendo las recomendaciones del
+asistente); los commits y pushes los confirma el usuario. Queda:
 
-Decisiones del incremento 3 (ADR 0004): orden total `(timestamp, source, event_id)` más estricto que
-«menor o igual» de SPEC §4.4; ventana deslizante `(t − 5 min, t]`; agregación por `(source, IP)` y
-`(source, usuario)` sumando hosts; `context_complete` declarado por quien llama (`history_start`); ausentes a 0
-con `has_ip`/`has_user`.
+1. **Revisar lo decidido en modo automático** (señalado en el ADR 0006 y en `verification.md`): la dependencia
+   `scikit-learn` (ADR 0005), la CLI `python -m security_anomaly.ml`, las variables de entorno nuevas
+   (`MODEL_DIR`, umbrales, fracciones) y los permisos por columna del rol `anomaly_app`.
+2. **Commit y push** del incremento 4 (T060 y T061; requieren autorización explícita) y comprobar que los tres
+   jobs de la CI quedan en verde (el job `integration` instala scikit-learn con `uv sync --frozen`). Anotar el
+   run en `verification.md`.
+3. Después, el **incremento 5** (`005-inference-api`): API de puntuación y consulta con API key (`reader` y
+   `admin`). Consumirá `load_active_model` y `score_vector` (incremento 4) y `compute_event_features` (3), y
+   lanzará el entrenamiento en un proceso aparte con `run_training` (D7).
+
+Decisiones del incremento 4 (ADR 0005 y 0006): separación temporal 70/15/15 con empates juntos; `anomaly_score` =
+percentil de calibración (no probabilidad); artefactos solo de `MODEL_DIR` con SHA-256 verificado antes de
+deserializar; una sola versión activa y un solo entrenamiento en curso (índices únicos parciales); activación
+solo con aprobación explícita; entrenar nunca activa.
 
 Para trabajar en local: la API en Compose usa el rol `anomaly_app`; `/ready` da 503 hasta ejecutar
 `docker compose --profile setup run --rm db-setup`. Hay que rellenar en `.env` las tres contraseñas de rol
-(distintas entre sí) además de `POSTGRES_PASSWORD`.
+(distintas entre sí) además de `POSTGRES_PASSWORD`, y `MODEL_DIR` para entrenar.
 
 ## 6. Pendientes y riesgos conocidos
 

@@ -3,11 +3,12 @@
 Prototipo de apoyo al análisis de seguridad (SOC): ingerirá logs de auditoría, los puntuará con
 Isolation Forest y expondrá los resultados por API REST.
 
-> **Estado: incrementos 0, 1, 2 y 3.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
+> **Estado: incrementos 0, 1, 2, 3 y 4.** Existen el esqueleto del servicio (sondas `/health` y `/ready`,
 > configuración, logging estructurado, Docker Compose y CI), la **biblioteca de ingesta y
 > normalización de logs** y la **persistencia de eventos en PostgreSQL** (guardado idempotente,
 > consulta, retención y tres roles de BD) y las **características causales** del modelo (por evento y por
-> ventana de 5 minutos). Todavía no hay modelo, API de negocio ni autenticación.
+> ventana de 5 minutos) y el **entrenamiento del modelo** (Isolation Forest calibrado, evaluado y
+> versionado, con activación manual). Todavía no hay API de negocio ni autenticación.
 >
 > Una anomalía no implica un ataque, y el `anomaly_score` futuro no es una probabilidad de
 > intrusión. Los datos sintéticos validan el software, no la capacidad real de detección.
@@ -18,7 +19,8 @@ Documentación del proyecto: [constitución](.specify/memory/constitution.md) ·
 [especificación del incremento 0](specs/000-base/spec.md) ·
 [especificación del incremento 1](specs/001-ingestion/spec.md) ·
 [especificación del incremento 2](specs/002-persistence/spec.md) ·
-[especificación del incremento 3](specs/003-feature-engineering/spec.md)
+[especificación del incremento 3](specs/003-feature-engineering/spec.md) ·
+[especificación del incremento 4](specs/004-model-training/spec.md)
 
 ## Requisitos
 
@@ -212,6 +214,41 @@ rango = features_for_range(engine, start, end, history_start=history_start)  # l
 - `context_complete` es falso cuando la ventana empieza antes de `history_start` (lo declara quien llama).
 - Las características describen comportamiento, no demuestran que haya un ataque, y los datos de ejemplo
   y de los tests son **sintéticos**.
+
+## Entrenamiento del modelo (biblioteca y CLI)
+
+`security_anomaly.ml` entrena el detector con los vectores de características del incremento 3: ordena los
+datos en el tiempo y los separa en **entrenamiento** (70 % más antiguo), **calibración** (15 %) y **prueba**
+(15 % más reciente); ajusta las transformaciones y un Isolation Forest (semilla 42) **solo** con el
+entrenamiento y calibra con el conjunto de calibración. No tiene API todavía (llega en el incremento 5).
+Contrato completo en [specs/004-model-training/contracts/ml-api.md](specs/004-model-training/contracts/ml-api.md).
+
+- **`anomaly_score` no es una probabilidad de ataque:** es el percentil de la puntuación bruta frente a la
+  distribución de calibración (de 0 a 1). La severidad (`low`, `medium`, `high`) usa umbrales provisionales
+  de 0,80 y 0,95, configurables y por validar. Decide siempre una persona.
+- **Evaluación y límites:** el informe muestra la distribución de puntuaciones, su estabilidad en el tiempo y la
+  proporción de alertas; con etiquetas externas añade precision, recall, F1 y PR-AUC. **No se promete ninguna
+  precisión mínima** y los datos de ejemplo son **sintéticos**: validan el software, no la detección real.
+- **Cada modelo queda versionado** (`v0001`, `v0002`…) con su esquema de características, parámetros, fecha,
+  métricas y la huella del dataset, en un archivo del directorio interno `MODEL_DIR` y en las tablas
+  `training_runs` y `model_versions`. Los registros no se pueden modificar salvo para activarlos.
+- **Un modelo solo se carga de `MODEL_DIR` y después de verificar su huella SHA-256**: nunca de una ruta
+  recibida de un usuario.
+- **Entrenar nunca activa.** Activar exige aprobación explícita y solo hay una versión activa a la vez.
+  Solo puede haber un entrenamiento en curso.
+
+```bash
+export MODEL_DIR=/var/lib/anomaly/models                      # directorio interno de confianza (ya creado)
+python -m security_anomaly.ml train --start 2026-01-01T00:00:00+00:00 --end 2026-02-01T00:00:00+00:00
+python -m security_anomaly.ml status                           # estado de los entrenamientos recientes
+python -m security_anomaly.ml list                             # versiones registradas
+python -m security_anomaly.ml activate v0001 --approve         # activación manual
+```
+
+Cada orden imprime una línea JSON; códigos de salida `0` correcto, `2` configuración o argumentos inválidos,
+`1` error controlado. Las variables (umbrales, fracciones, árboles) están en `.env.example`. El modelo usa
+`scikit-learn` ([ADR 0005](docs/decisions/0005-scikit-learn.md)); la confianza de los artefactos y la
+concurrencia están en el [ADR 0006](docs/decisions/0006-confianza-de-artefactos-y-concurrencia.md).
 
 ## Migraciones
 
