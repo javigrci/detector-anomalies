@@ -54,5 +54,7 @@ def test_indexes() -> None:
         assert by_name[name].dialect_options["postgresql"]["where"] is not None
 
 
-def test_metadata_has_only_events() -> None:
-    assert set(metadata.tables) == {"events"}
+def test_metadata_only_has_the_known_tables() -> None:
+    # `events` (incremento 2) y, si el paquete `ml` está importado, las tablas del incremento 4.
+    assert "events" in metadata.tables
+    assert set(metadata.tables) <= {"events", "training_runs", "model_versions"}

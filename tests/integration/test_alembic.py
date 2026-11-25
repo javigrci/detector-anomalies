@@ -36,7 +36,7 @@ def test_upgrade_creates_events_with_indexes_and_checks(
     url = role_url(MIGRATOR_ROLE, name)
     result = run_alembic(url, "upgrade", "head")
     assert result.returncode == 0, result.stderr
-    assert _tables(url) == {"events", "alembic_version"}
+    assert _tables(url) == {"events", "alembic_version", "training_runs", "model_versions"}
     engine = create_engine(url)
     try:
         inspector = inspect(engine)
@@ -65,7 +65,7 @@ def test_upgrade_twice_changes_nothing(
     assert run_alembic(url, "upgrade", "head").returncode == 0
     again = run_alembic(url, "upgrade", "head")
     assert again.returncode == 0, again.stderr
-    assert _tables(url) == {"events", "alembic_version"}
+    assert _tables(url) == {"events", "alembic_version", "training_runs", "model_versions"}
 
 
 def test_grants_follow_the_privilege_table(
